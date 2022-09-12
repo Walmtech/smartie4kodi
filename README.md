@@ -1,7 +1,10 @@
-# kodi4smartie
+# smartie4kodi
 Kodi support for LCD Smartie
 
-Fork of orginal to setup feature for my own needs.
+Fork of orginal Kodi4Smartie to setup some new features for my own needs.
+Moved source from Nuget to vcpkg and retargeted to Visual Studio 2022
+Removed Test section I wasn't using. Currently V1.01 same as orginal no new features
+Renamed to follow Kodi Trademark rules.
 
 ![](/docs/smartie4kodi1.png)
 
