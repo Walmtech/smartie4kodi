@@ -1,7 +1,9 @@
 /*
-Kodi4Smartie - A DLL to display information from Kodi on a LCD character display
+smartie4kodi - A DLL to pass information to LCDSmartie
 
-Copyright (C) 2016  Chris Vavruska
+Copyright (c) 2022 Simon Walmsley
+
+Forked from Kodi4Smartie - Copyright (C) 2016  Chris Vavruska
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -45,8 +47,8 @@ extern bool connected;
 extern bool connecting;
 HANDLE connect_timer;
 
-#define KODI_DLL_VERSION_MAJ "2"
-#define KODI_DLL_VERSION_MIN "0.2a2"
+#define KODI_DLL_VERSION_MAJ "1"
+#define KODI_DLL_VERSION_MIN "0.1a1"
 #define KODI_DLL_BUILD_DATE __DATE__
 
 //forward declaration

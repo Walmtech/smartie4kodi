@@ -16,7 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
-    <Text Include="Kodi4Smartie.txt">
+    <Text Include="smartie4kodi.txt">
       <Filter>Source Files</Filter>
     </Text>
   </ItemGroup>
@@ -67,8 +67,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="kodi4smartie.cfg">
+    <None Include="smartie4kodi.cfg">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

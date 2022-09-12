@@ -1,46 +1,46 @@
-Kodi4Smartie v2.0.2
+Smartie4kodi v1.0.1
 ===================
 
-Kodi4Smartie is a DLL plugin for LCD Smartie(http://lcdsmartie.sourceforge.net/) which listens for notification from Kodi and displays information on a 2 line LCD character display. While the default line width is 20 character there is no reason it can’t be configured for a short or longer width.
+smartie4kodi is a DLL plugin for LCD Smartie (http://lcdsmartie.sourceforge.net/) which listens for notification from Kodi and displays information on a 2 line LCD character display. While the default line width is 20 character there is no reason it can’t be configured for a short or longer width.
 
 Installation
 ------------
 
-1) Download the zip file containing the Kodi4Smartie DLL and associated files.
-2) Copy the kodi4smartie.dll and the kodi4smartie.cfg to the LCD Smartie plugins folder.
-3) Copy the cpprest120_2_6.dll to the LCD Smartie folder.
+1) Download the zip file containing the smartie4kodi DLL and associated files.
+2) Copy the smartie4kodi.dll and the smartie4kodi.cfg to the LCD Smartie plugins folder.
+3) Copy the cpprest140_2_6.dll to the LCD Smartie main folder.
 
 The DLL provides the following LCD Smartie functions:
 
 Function 1: Is meant to be displayed on line 1 of an LCD display. It shows title information as well as other navigation information (FF, rew, Volume)
 
-Function 2: Is meant to be displayed on line 2 of an LCD display. Upon initial playing of a title Kodi4Smartie shows various lines of information about the title. It then shows current progress in a title.
+Function 2: Is meant to be displayed on line 2 of an LCD display. Upon initial playing of a title smartie4kodi shows various lines of information about the title. It then shows current progress in a title.
 
 Function 3: Lets you know if Kodi is running. It can be used for custom actions inside LCD Smartie.
 
-Function 4: Displays the current version of the Kodi4Smartie DLL. Not really useful unless you are unsure which version of the DLL you are running.
+Function 4: Displays the current version of the smartie4kodi DLL. Not really useful unless you are unsure which version of the DLL you are running.
 
 Function 5: Displays custom information from kodi.
-	usage: $dll(Kodi4smartie,5,method,item#sub-item)
+	usage: $dll(smartie4kodi,5,method,item#sub-item)
 	Example 1: 
-		$dll(kodi4smartie,5,Player.GetPlayers,#type)
+		$dll(smartie4kodi,5,Player.GetPlayers,#type)
 
 		In this example we are calling the Player.GetPlayers method. This method returns PlayerId and type. We want the value associated with type.
 	Example 2:
-		$dll(kodi4smartie,5,Player.GetProperties,totaltime#minutes)
+		$dll(smartie4kodi,5,Player.GetProperties,totaltime#minutes)
 
 		In this example we calling the Player.GetProperties method to get the totaltime item. The item returns hours,minutes,second and milisecond. We are looking for the the minutes.
 
 Function 6: Display the current icon (from function 1). Can be useful for forming your own screens.
-	usage : $dll(Kodi4smartie,6,,)
+	usage : $dll(smartie4kodi,6,,)
 Function 7: Display Label - If kodi is not running then it will display the "knf_str" string.
-	usage : $dll(Kodi4smartie,7,method,item)
+	usage : $dll(smartie4kodi,7,method,item)
 	Example  1:
-		$dll(kodi4smartie,7,XBMC.GetInfoLabels,System.CurrentWindow)
+		$dll(smartie4kodi,7,XBMC.GetInfoLabels,System.CurrentWindow)
 		
 		This example will show the page or menu you are on (Home/Movies/Music/etc) 
 	Example 2:
-		$dll(kodi4smartie,7,XBMC.GetInfoLabels,System.CurrentControl)
+		$dll(smartie4kodi,7,XBMC.GetInfoLabels,System.CurrentControl)
 
 		This example will show the current control/sub menu item.
 
@@ -59,8 +59,8 @@ Configuring LCD Smartie
 
 In the lcd Smartie setup window for line 1 & 2 enter the following:
 
-$dll(Kodi4smartie,1,,)
-$dll(Kodi4smartie,2,,)
+$dll(smartie4kodi,1,,)
+$dll(smartie4kodi,2,,)
 
 Configure the following for both lines:
 
@@ -75,24 +75,24 @@ If you want to switch between screens you can use the following lcd smartie conf
 Refresh interval 1000. screen 1-3:Enabled & Sticky
 
 screen 1
-line1: $dll(kodi4smartie,8,XBMC.GetInfoLabels,System.CurrentWindow)IDLE
+line1: $dll(smartie4kodi,8,XBMC.GetInfoLabels,System.CurrentWindow)IDLE
 line2: SCREEN
 
 screen 2
-line 1:$dll(kodi4smartie,7,XBMC.GetInfoLabels,System.CurrentWindow)
-line 2:$dll(kodi4smartie,7,XBMC.GetInfoLabels,System.CurrentControl)
+line 1:$dll(smartie4kodi,7,XBMC.GetInfoLabels,System.CurrentWindow)
+line 2:$dll(smartie4kodi,7,XBMC.GetInfoLabels,System.CurrentControl)
 
 Screen 3
-line 1:$dll(kodi4smartie,1,,)
-line 2:$dll(kodi4smartie,2,,)$dll(kodi4smartie,10,,)
+line 1:$dll(smartie4kodi,1,,)
+line 2:$dll(smartie4kodi,2,,)$dll(smartie4kodi,10,,)
 
-Action 1: $dll(kodi4smartie,9,,) = 1 gotoscreen(2)
-Action 1: $dll(kodi4smartie,9,,) = 2 gotoscreen(3)
-Action 1: $dll(kodi4smartie,9,,) = 11 gotoscreen(1)
+Action 1: $dll(smartie4kodi,9,,) = 1 gotoscreen(2)
+Action 1: $dll(smartie4kodi,9,,) = 2 gotoscreen(3)
+Action 1: $dll(smartie4kodi,9,,) = 11 gotoscreen(1)
 
 Notifications
 -------------
-Kodi4Smartie listens for the following notifications from Kodi
+smartie4kodi listens for the following notifications from Kodi
 
 "Player.OnPlay"
 "Player.OnPause"
@@ -106,9 +106,9 @@ When the dll receives notifications it will display different information based 
 Configuration
 -------------
 
-While I have tried to make Kodi4Smartie somewhat configurable it is also based on what I wanted to see on each screen.
+While I have tried to make smartie4kodi somewhat configurable it is also based on what I wanted to see on each screen.
 
-See the Kodi4Smartie.cfg file for information about configuring kodi4smartie.
+See the smartie4kodi.cfg file for information about configuring smartie4kodi.
 
 Source Code
 -----------
@@ -117,7 +117,7 @@ The source code is open source under the GPL license. We will gladly accept any 
 
 Change log
 ----------
-Changes from 2.0
+Changes from 1.0.1
 
 Better connection mechanism when kodi is started after lcdSmartie
 bar_modes to show bars using different characters (see .cfg file for documentation)
@@ -131,4 +131,4 @@ If you find any bugs please let me know.
 
 New Features?
 -------------
-If you want some new functionality added to kodi4smartie then let me know.
+If you want some new functionality added to smartie4kodi then let me know.
