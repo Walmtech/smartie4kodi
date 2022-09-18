@@ -13,9 +13,9 @@
 <blockquote><img title="Smartie4kodi2.png" src="Smartie4kodi2.png" alt="Smartie4kodi2.png"></blockquote>
 </blockquote>
 <p>3) Copy the Smartie4kodi.dll and the Smartie4kodi.cfg to the LCD Smartie program plugins folder.<br>
-4) Copy the cpprest120_<em>2_</em>6.dll to the LCD Smartie program folder.<br>
+4) Copy all the other DLL files to the LCD Smartie program folder.<br>
 <br>
-The DLL provides the following LCD Smartie functions:<br>
+The Main DLL provides the following LCD Smartie functions:<br>
 <br>
 <strong>Function 1:</strong> Is meant to be displayed on line 1 of an LCD display. It shows title information as well as other navigation information (FF, rew, Volume)<br>
 <br>
@@ -57,6 +57,26 @@ In this example we calling the Player.GetProperties method to get the totaltime 
 <br>
 <strong>Function 11</strong>: Get connected state&nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;This function is better at detecting Kodi than function 3 since function 3 will return true before you can communicate with&nbsp;Kodi.</p>
+<strong>Function 12</strong>: Media Type
+	Returns an integer of the current Media Type: kodi-not-running(0),nothing playing(1),movie(2),episode(3),channel(4),song(5),picture(6)<br>
+<br>
+<strong>Function 13</strong>: Progress and Navigation
+	Displays  Navigation Symbol + Progress bar switches to navigation like Function 1<br>
+<br>
+<strong>Function 14</strong>: Simple Title
+	Displays  Title(Year) for Films, Title for Pictures Track: Track Title for songs,<br>
+<br>	
+	Episode: Episode Title (year) for Episodes and Showtitle for TV<br>
+<br>
+<strong>Function 15</strong>: Simple more info
+	Displays  Album Artist - Album (Year) for Songs and Show Title (Year) for Episodes "notapp_str" for anything else<br>
+<br>
+<strong>Function 16</strong>: End Time
+	Shows Finish time for Current Media in form "ends_str" --:-- AM/PM if nothing playing just dashes<br>
+<br>
+
+
+
 <h2>Configuring LCD Smartie</h2>
 <p>In the lcd Smartie setup window for line 1 &amp; 2 enter the following:<br>
 <br>
@@ -115,12 +135,10 @@ See the Smartie4kodi.cfg file for information about configuring Smartie4kodi.</p
 . Provide better error handling as well as fix a deadlock issue when kodi would exit mid request<br>
 . Remove Host from the configuration. Smartie4kodi must be running on the same machine as Kodi. This may return in a 2.1 release as I think I have a need for it return.</p>
 <p>&nbsp;</p>
-<h2>Special Thanks</h2>
-<p>Special thanks go out to&nbsp;Johannes Tveden Nielsen for pushing me along to add the new functionality. Without his push and testing function 5-11 would not have been added.</p>
 <h2>Source Code</h2>
 <p>The source code is open source under GPLv3. We will gladly accept any modification as long as they fit into the project. Source code can be found at Smartie4kodi.codeplex.com</p>
 <h2>Bugs?</h2>
-<p>I primarily use Kodi for viewing movies. While there is support for in the DLL for displaying information about TV, Music and Pictures I have done little testing in this area.<br>
+<p>I primarily use Kodi for viewing TV Shows and movies. While there is support for in the DLL for displaying information about TV and Music I have done little testing in this area.<br>
 <br>
 If you find any bugs please let me know. Please include any steps needed to reproduce the issue.</p>
 </div><div class="ClearBoth"></div>

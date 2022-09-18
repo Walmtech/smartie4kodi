@@ -48,7 +48,7 @@ config_t configs[] = {
 	{ "lcd_width",	MINT, 20,	"" },
 	{ "use_bars",	MINT, 1,	"" },
 	{ "bar_mode", MINT, 0, 0 },
-	{ "reset_delay",MINT, 3,	"" },
+	{ "reset_delay",MINT, 500,	"" },
 	{ "kodiexe",	MSTR, 0,	"Kodi.exe"},	
 	{ "connect_delay", MINT, 1, "" },
 	{ "time_format", MSTR, 0, "mm/dd/yy hh:nn" },
@@ -63,9 +63,13 @@ config_t configs[] = {
 	{ "channel_str",MSTR, 0,	"Channel" },	
 	{ "ff_str",		MSTR, 0,	"Fast-Forward" },
 	{ "rewind_str",	MSTR, 0,	"Rewind" },
-	{ "volume_str", MSTR, 0,    "Volume"},	
+	{ "pause_str",	MSTR, 0,	"Pause" },
+	{ "resume_str",	MSTR, 0,	"Resume" },
+	{ "volume_str", MSTR, 0,    "Volume"},
+	{ "notapp_str", MSTR, 0,    "Not Applicable"},
+	{ "ends_str", MSTR, 0,    "Ends @"},
 	{ "knf_str", MSTR, 0,       "Kodi not found"},	
-	{ "unknown_title", MSTR, 20, "Unknown Title"},
+	{ "unknown_title", MSTR, 20, "Unknown Title"}
 };
 
 unsigned int get_config(configs_e index)
@@ -154,7 +158,7 @@ void init_config()
 	char *data;
 	char *pos;
 
-	if (fopen_s(&fd, "plugins\\kodi4smartie.cfg", "r") == 0)
+	if (fopen_s(&fd, "plugins\\smartie4kodi.cfg", "r") == 0)
 	{
 		while (fgets(line, sizeof(line), fd))
 		{	

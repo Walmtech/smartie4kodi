@@ -18,7 +18,6 @@ json::value get_item_from_player(int id);
 void get_time_properties_from_player(int id);
 utility::string_t format_time(json::value time_val);
 void handle_on_play(json::value in);
-void handle_on_pause();
 void handle_on_stop();
 void handle_speed_change(json::value incoming);
 void handle_volume_change(json::value incoming);

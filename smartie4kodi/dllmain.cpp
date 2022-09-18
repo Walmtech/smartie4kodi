@@ -43,6 +43,10 @@ char line5[255];
 char line6[255];
 char line7[255];
 char line8[255];
+char line9[255];
+char line10[255];
+char line11[255];
+char line12[255];
 extern bool connected;
 extern bool connecting;
 HANDLE connect_timer;
@@ -54,7 +58,7 @@ HANDLE connect_timer;
 //forward declaration
 void CALLBACK try_connect(PVOID lpParameter, BOOLEAN TimerOrWaitFired);
 string center(string in, unsigned int width);
-
+string overflow(string in, unsigned int width);
 
 
 /*********************************************************
@@ -91,9 +95,9 @@ __declspec(dllexport)  int __stdcall  GetMinRefreshInterval()
 	// The actual value used by Smartie will be the higher of this
 	// value and of the "dll check interval" setting
 	// on the Misc tab.  [This function is optional, Smartie will
-	// assume 300ms if it is not provided.]
+	// assume 100ms if it is not provided.]
 	// 
-	return 300; // 300 ms
+	return 100; // 100 ms
 }
 
 
@@ -120,7 +124,7 @@ __declspec(dllexport)  char * __stdcall  function1(char *param1, char *param2)
 		(get_mode().compare("song") == 0) ||
 		(get_mode().compare("picture") == 0))
 	{
-		display += get_title();
+		display += get_title() + get_year();
 	}
 	else if (get_mode().compare("channel") == 0)
 	{
@@ -345,7 +349,7 @@ __declspec(dllexport)  char * __stdcall  function7(char *param1, char *param2)
 /*********************************************************
 * Function 8
 * Display label
-* Same as function7 but displays nothing is kodi is not 
+* Same as function7 but displays nothing if kodi is not 
 * found to be running.
 **********************************************************/
 __declspec(dllexport)  char * __stdcall  function8(char *param1, char *param2)
@@ -380,6 +384,7 @@ __declspec(dllexport)  char * __stdcall  function8(char *param1, char *param2)
 **********************************************************/
 __declspec(dllexport)  char * __stdcall  function9(char *param1, char *param2)
 {
+
 	string display;
 	if (is_kodi_running())
 	{ 
@@ -420,6 +425,173 @@ __declspec(dllexport)  char * __stdcall  function11(char *param1, char *param2)
 	}
 	return "0";
 }
+
+/*********************************************************
+* Function 12
+* Return kodi media type
+* kodi-not-running(0),nothing playing(1),movie(2),
+* episode(3),channel(4),song(5),picture(6)
+**********************************************************/
+__declspec(dllexport)  char* __stdcall  function12(char* param1, char* param2)
+{
+	string display;
+	if (!connected)
+	{
+		return "0";
+	}
+	else if (get_mode().compare("movie") == 0)
+	{
+		return "2";
+	}
+	else if (get_mode().compare("episode") == 0)
+	{
+		return "3";
+	}
+	else if (get_mode().compare("channel") == 0)
+	{
+		return "4";
+	}
+	else if (get_mode().compare("song") == 0)
+	{
+		return "5";
+	}
+	else if (get_mode().compare("picture") == 0)
+	{
+		return "6";
+	}
+	return "1";
+}
+
+/*********************************************************
+* Function 13
+* Displays Navigation Symbol + Progress bar 
+* Also shows navigation messages same as Function 1
+**********************************************************/
+__declspec(dllexport)  char* __stdcall  function13(char* param1, char* param2)
+{
+	string display;
+	if (!connected && !connecting)// && is_kodi_running())
+	{
+		connecting = true;
+		CreateTimerQueueTimer(&connect_timer, NULL, try_connect, NULL, get_config(cCONNECT_DELAY) * 1000, 0, 0);
+	}
+	if ((get_mode().compare("movie") == 0) ||
+		(get_mode().compare("episode") == 0) ||
+		(get_mode().compare("song") == 0) ||
+		(get_mode().compare("channel") == 0))
+	{
+		if (get_config(cDISABLE_ICON) == 0)
+		{
+			display = get_icon(7) + string(" ") + get_shorttime();
+		}
+		else
+		{
+			display = get_time();
+		}
+	}
+	else
+	{
+		display = string("$Center($Time(") + string(get_config_str(cTIME_FORMAT)) + string("))");
+	}
+
+	strcpy_s(line9, display.c_str());
+
+	return line9;
+}
+
+
+/*********************************************************
+*  Function 14
+*  Returns Title(Year) for Films and Pictures, 
+*  Track: Track Title for songs,
+*  Episode: Episode Title (Year) for Episodes and 
+*  Show Title for TV
+*********************************************************/
+__declspec(dllexport)  char* __stdcall  function14(char* param1, char* param2)
+{
+	string display;
+	if (!connected && !connecting)// && is_kodi_running())
+	{
+		connecting = true;
+		CreateTimerQueueTimer(&connect_timer, NULL, try_connect, NULL, get_config(cCONNECT_DELAY) * 1000, 0, 0);
+	}
+	if ((get_mode().compare("channel") == 0) ||
+		(get_mode().compare("picture") == 0))
+	{
+		display += overflow((get_fixedtitle()), get_config(cLCD_WIDTH));
+	}
+	else if (get_mode().compare("episode") == 0)
+	{
+		display += overflow((get_episode_info() + get_year()), get_config(cLCD_WIDTH));
+	}
+	else if (get_mode().compare("song") == 0)
+	{
+		display += overflow((get_track() + get_fixedtitle()), get_config(cLCD_WIDTH));
+	}
+	else if (get_mode().compare("movie") == 0)
+	{
+		display += overflow((get_fixedtitle() + get_year()), get_config(cLCD_WIDTH)); 
+	}
+	else
+	{
+		display += center(string(get_config_str(sWELCOME)), get_config(cLCD_WIDTH) - (2 * (get_config(cDISABLE_ICON) == 0)));
+	}
+
+	strcpy_s(line10, display.c_str());
+
+	return line10;
+}
+
+/*********************************************************
+* Function 15
+* Displays  Album Artist - Album (Year) for Songs and
+* Show Title for Episodes "notapp_str" for anything else
+**********************************************************/
+__declspec(dllexport)  char* __stdcall  function15(char* param1, char* param2)
+{
+	string display;
+	if (!connected && !connecting)// && is_kodi_running())
+	{
+		connecting = true;
+		CreateTimerQueueTimer(&connect_timer, NULL, try_connect, NULL, get_config(cCONNECT_DELAY) * 1000, 0, 0);
+	}
+	if (get_mode().compare("episode") == 0)
+	{
+		display += overflow((get_fixedtitle()), get_config(cLCD_WIDTH));
+	}
+	else if (get_mode().compare("song") == 0)
+	{
+		display += overflow((music_info() + get_year()), get_config(cLCD_WIDTH));
+	}
+	else if (get_mode().compare("channel") == 0)
+	{
+		display += overflow(get_tv_info(), get_config(cLCD_WIDTH));
+	}
+	else
+	{
+		display += center(string(get_config_str(sNOTAPP)), get_config(cLCD_WIDTH));
+	}
+
+	strcpy_s(line11, display.c_str());
+
+	return line11;
+}
+
+/*********************************************************
+* Function 16
+* Displays the End Time of current media and 0 if nothing playing
+**********************************************************/
+__declspec(dllexport)  char* __stdcall  function16(char* param1, char* param2)
+{
+	string display;
+
+	display = get_endtime();
+
+	strcpy_s(line12, display.c_str());
+
+	return line12;
+}
+
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -511,6 +683,15 @@ string center(string in, unsigned int width)
 			spaces += string(" ");
 		}
 		return spaces + in;
+	}
+	return in;
+}
+
+string overflow(string in, unsigned int width) // If wider than width of LCD add some padding so scolling looks better
+{
+	if (in.length() > width)
+	{
+		return in + " | ";
 	}
 	return in;
 }

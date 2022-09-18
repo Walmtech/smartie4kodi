@@ -1,7 +1,9 @@
 /*
-Kodi4Smartie - A DLL to display information from Kodi on a LCD character display
+smartie4kodi - A DLL to pass information to LCDSmartie
 
-Copyright (C) 2016  Chris Vavruska
+Copyright (c) 2022 Simon Walmsley
+
+Forked from Kodi4Smartie - Copyright (C) 2016  Chris Vavruska
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,7 +21,9 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
 #include "stdafx.h"
+
 #include <string>
+#include <ctime>
 #include <iostream>
 #include <regex>
 #include <cpprest/json.h>
@@ -47,15 +51,21 @@ using namespace utility;
 
 icon_t icon = none;
 string title = "";
+string fixedtitle = "";
+int secondsleft = 0;
 int player_id = 0;
 string_t mode;
 string_t prev_mode;
 string_t time_str;
+string_t shorttime_str;
 string_t episode_info;
+string_t more_info;
 string_t tv_info;
 string_t artist_info;
+static string prev_title;
 string_t album_info;
 int track_info;
+int year;
 HANDLE reset_timer = NULL;
 HANDLE time_timer = NULL;
 HANDLE idle_timer = NULL;
@@ -95,6 +105,7 @@ void set_title(string_t newtitle)
 		//remove leading whitespace/cr/lf
 		int pos = title.find_first_not_of("\n\r\t ");
 		title = title.substr(pos);
+		fixedtitle = title;
 	}
 	::log("title=%s", title.c_str());
 
@@ -110,6 +121,37 @@ string get_title()
 	return convert;
 }
 
+string get_fixedtitle()
+{
+	mtx.lock();
+	string convert = fixedtitle;
+	mtx.unlock();
+
+	return convert;
+}
+
+void set_year(int newyear)
+{
+	mtx.lock();
+	year = newyear;
+	mtx.unlock();
+}
+
+string get_year()
+{
+	string formatedyear;
+	mtx.lock();
+	if (year != 0)
+	{
+		formatedyear = " (" + std::to_string(year) + ")";
+	}
+	else
+	{
+		formatedyear = "";
+	}
+	mtx.unlock();
+	return formatedyear;
+}
 
 void set_icon(icon_t icon_val)
 {
@@ -241,18 +283,17 @@ string_t center(string_t in)
 	return in;
 }
 
-void set_time(int percentage, string_t time, string_t totaltime)
+void set_time(int remsecs, int percentage, string_t time, string_t totaltime)
 {
 	mtx.lock();
-
 	if (get_config(cUSE_BARS))
 	{
 		int mode = get_config(cBAR_MODE);
 		if (mode > 0)
 		{
-			int bars = (int) round((double)get_config(cLCD_WIDTH)*((double)percentage / 100));
+			int bars = (int)round((double)get_config(cLCD_WIDTH) * ((double)percentage / 100));
 			time_str.clear();
-			for (int x = 0; x < (int) get_config(cLCD_WIDTH); x++)
+			for (int x = 0; x < (int)get_config(cLCD_WIDTH); x++)
 			{
 				switch (mode)
 				{
@@ -267,17 +308,39 @@ void set_time(int percentage, string_t time, string_t totaltime)
 					break;
 				}
 			}
+			bars = ((int)round((double)get_config(cLCD_WIDTH) - 2) * ((double)percentage / 100));
+			shorttime_str.clear();
+			for (int x = 0; x < ((int)get_config(cLCD_WIDTH) - 2); x++)
+			{
+				switch (mode)
+				{
+				default: // mode 1
+					shorttime_str.append((x < bars) ? string_t(U(">")) : string_t(U(" ")));
+					break;
+				case 2:
+					shorttime_str.append((x < bars) ? string_t(U(">")) : string_t(U("-")));
+					break;
+				case 3:
+					shorttime_str.append((x == bars) ? string_t(U(">")) : string_t(U("-")));
+					break;
+				}
+			}
 		}
 		else
 		{
 			time_str = string_t(U("$Bar(")) + std::to_wstring(percentage) + string_t(U(",100,")) +
 				std::to_wstring(get_config(cLCD_WIDTH)) + string_t(U(")"));
+			shorttime_str = string_t(U("$Bar(")) + std::to_wstring(percentage) + string_t(U(",100,")) +
+				std::to_wstring((get_config(cLCD_WIDTH) - 2)) + string_t(U(")"));
 		}
 	}
 	else
 	{
-		time_str =  center(time + string_t(U("/")) + totaltime);
+		time_str = center(time + string_t(U("/")) + totaltime);
+		shorttime_str = time + string_t(U("/")) + totaltime;
+
 	}
+	secondsleft = remsecs;
 	mtx.unlock();
 }
 
@@ -289,43 +352,127 @@ string get_time()
 	return convert;
 }
 
-void set_speed(int speedval)
+string get_endtime()
 {
 	mtx.lock();
-	icon_t speed = rew;
-	string speedtext = string(get_config_str(sREWIND));
-	static string prev_title;
-	
-	
-	if (speedval != 1)
+	string convert = (get_config_str(sENDAT));
+	if (secondsleft < 1)
 	{
-		if (speedval > 0)
-		{
-			speed = ff;
-			speedtext = string(get_config_str(sFF));
+		convert += " --:--";
+		mtx.unlock();
+		return convert;
+	}
+	int  qoutient, seconds, hours, minutes;
+	struct tm time_now;
+	time_t now = time(NULL);
+	localtime_s(&time_now, &now);
+	
+	//Convert Total Seconds to Hours Minutes and Seconds
+	qoutient = secondsleft / 60;
+	seconds = (secondsleft % 60);
+	minutes = (qoutient % 60);
+	hours = (qoutient / 60);
+	//Add on current time
+	seconds += time_now.tm_sec;
+	minutes += time_now.tm_min;
+	hours += time_now.tm_hour;
+	//Round seconds
+	if (seconds > 30)
+	{
+		++minutes;
+	}
+	if (seconds > 90)
+	{
+		++minutes;
+	}
+	//Handle Minutes 
+	if (minutes > 59)
+	{
+		++hours;
+		minutes -= 60;
+	}
+	string mins_str = std::to_string(minutes);
+	if (minutes < 10) //pad
+	{
+		mins_str = "0" + mins_str;
+	}
+	//Handle Hours
+	if (hours > 23)
+	{
+		hours -= 24;
+	}
+	if (hours > 11)
+	{
+		mins_str += " PM";
 		}
+	else
+	{
+		mins_str += " AM";
+	}
+	if (hours == 0)
+	{
+		hours = 12;
+	}
+	convert += " " + std::to_string(hours) + ":" + mins_str;
+	mtx.unlock();
+	return convert;
+}
 
-		speedval = abs(speedval);
+string get_shorttime()
+{
+	mtx.lock();
+	if (prev_title.compare("") != 0)
+	{
+		shorttime_str = string_t(utility::conversions::to_string_t(title));
+	}
+	string convert = string(shorttime_str.begin(), shorttime_str.end());
+	mtx.unlock();
+	return convert;
+}
 
-		if (speedval > 1)
+
+void set_speed(int speedval)
+{
+	stop_time_timer();
+	mtx.lock();
+	string speedtext;
+
+	if (speedval == 1) 
+	{
+		icon = play;
+		if (prev_title.compare("") != 0)
 		{
-			speedtext += string(" ") + std::to_string(speedval) + string("X");
+			title = prev_title;
+			prev_title = "";
 		}
-
-		icon = speed;
-		if (prev_title.compare("") == 0)
+		else
 		{
-			prev_title = title;
+			shorttime_str = string_t(utility::conversions::to_string_t(get_config_str(sRESUME)));;
 		}
-		title = speedtext;
+	}
+	else if (speedval == 0)
+	{
+		icon = pause;
+		shorttime_str = string_t(utility::conversions::to_string_t(get_config_str(sPAUSE)));;
 	}
 	else
 	{
-		icon = play;
-		title = prev_title;
-		prev_title = "";
+		icon = rew;
+		speedtext = string(get_config_str(sREWIND));
+		if (speedval > 1)
+		{
+			icon = ff;
+			speedtext = string(get_config_str(sFF));
+		}
+		speedtext += string(" ") + std::to_string(abs(speedval)) + string("X");
+		if (prev_title.compare("") == 0)
+		{
+			prev_title = title; //Store title if not done already
+		}
+		title = speedtext;
 	}
 	mtx.unlock();
+	start_time_timer(1);
 }
 
 void set_volume(bool mute, int vol)
@@ -347,7 +494,7 @@ void set_volume(bool mute, int vol)
 		}
 		mtx.unlock();
 		set_mode(U("volume"));
-		CreateTimerQueueTimer(&reset_timer, NULL, reset_fired, NULL, get_config(cRESET_DELAY) * 1000, 0, 0);
+		CreateTimerQueueTimer(&reset_timer, NULL, reset_fired, NULL, get_config(cRESET_DELAY), 0, 0);
 	}
 }
 
@@ -403,7 +550,6 @@ string get_tv_info()
 	mtx.lock();
 	convert = string(tv_info.begin(), tv_info.end());
 	mtx.unlock();
-
 	return convert;
 }
 
@@ -448,6 +594,29 @@ string get_song_info()
 	return string("$Center(") + convert + string(")");
 }
 
+string music_info()
+{
+	//return different information based on extra_info count
+	string convert;
+	mtx.lock();
+	convert = string(artist_info.begin(), artist_info.end()) + " - " + string(album_info.begin(), album_info.end());
+	mtx.unlock();
+	return convert;
+}
+
+string get_track()
+{
+	//return different information based on extra_info count
+	string convert;
+	mtx.lock();
+	if (track_info)
+	{
+		convert = std::to_string(track_info) + ": ";
+	}
+	mtx.unlock();
+	return convert;
+}
+
 void CALLBACK reset_fired(PVOID lpParameter, BOOLEAN TimerOrWaitFired)
 {
 	mtx.lock();
@@ -482,6 +651,7 @@ void stop_reset_timer()
 
 void show_stop()
 {
+	secondsleft = 0;
 	stop_time_timer();
 	set_icon(stop);
 	try
@@ -490,7 +660,7 @@ void show_stop()
 	}
 	catch (...) {}
 
-	CreateTimerQueueTimer(&reset_timer, NULL, reset_fired, NULL, get_config(cRESET_DELAY)*1000, 0, 0);
+	CreateTimerQueueTimer(&reset_timer, NULL, reset_fired, NULL, get_config(cRESET_DELAY), 0, 0);
 }
 
 void CALLBACK update_time(PVOID lpParameter, BOOLEAN TimerOrWaitFired)
@@ -519,6 +689,7 @@ void start_time_timer(int start_interval_secs)
 
 void stop_time_timer()
 {
+	//log("stop time timer");
 	if (time_timer)
 	{
 		DeleteTimerQueueTimer(NULL, time_timer, INVALID_HANDLE_VALUE);

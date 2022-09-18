@@ -15,7 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
     <Text Include="smartie4kodi.txt">
       <Filter>Source Files</Filter>
     </Text>

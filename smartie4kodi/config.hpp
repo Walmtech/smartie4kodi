@@ -22,7 +22,11 @@ enum configs_e {
 	sCHANNEL,
 	sFF,
 	sREWIND,
+	sPAUSE,
+	sRESUME,
 	sVOLUME,
+	sNOTAPP,
+	sENDAT,
 	sKNF,
 	sUNKNOWN,
 	cMAX

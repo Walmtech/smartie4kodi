@@ -30,7 +30,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 FILE	*log_fd = NULL;
 bool	log_init = false;
 
-#define LOG_FILE "plugins/kodi4smartie.log"
+#define LOG_FILE "plugins\\smartie4kodi.log"
 
 void log(char *format, ...)
 {
@@ -76,7 +76,7 @@ __declspec(dllexport) void init_logging()
 			strncpy_s(access, "w", sizeof(access));
 		}
 	
-		//if (fopen_s(&log_fd, "plugins/kodi_smartie.log", "w") == 0)
+		//if (fopen_s(&log_fd, "plugins\\smartie4kodi.log", "w") == 0)
 		if (fopen_s(&log_fd, LOG_FILE, access) == 0)
 		{
 			fclose(log_fd);

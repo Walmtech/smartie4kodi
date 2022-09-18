@@ -34,6 +34,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include "display.hpp"
 #include "config.hpp"
 
+int justseconds = 0;
+
 using namespace std;
 using namespace web;
 using namespace concurrency;
@@ -45,6 +47,7 @@ custom_data_map_t custom_data;
 // Notifications we handle
 //"Player.OnPlay"
 //"Player.OnPause"
+//"Player.OnResume"
 //"Player.OnStop"
 //"Player.OnSpeedChanged"
 //"Application.OnVolumeChanged"
@@ -67,7 +70,11 @@ void parse(json::value incoming)
 		}
 		else if ((method.as_string().compare(U("Player.OnPause")) == 0))
 		{
-			handle_on_pause();
+			handle_speed_change(incoming);
+		}
+		else if ((method.as_string().compare(U("Player.OnResume")) == 0))
+		{
+			handle_speed_change(incoming);
 		}
 		else if ((method.as_string().compare(U("Player.OnStop")) == 0))
 		{
@@ -75,6 +82,7 @@ void parse(json::value incoming)
 		}
 		else if (method.as_string().compare(U("Player.OnSpeedChanged")) == 0)
 		{
+			
 			handle_speed_change(incoming);
 		}
 		else if (method.as_string().compare(U("Application.OnVolumeChanged")) == 0)
@@ -99,6 +107,7 @@ json::value get_item_from_player(int playerid)
 	properties[6] = json::value::string(U("artist"));
 	properties[7] = json::value::string(U("album"));
 	properties[8] = json::value::string(U("track"));
+	properties[9] = json::value::string(U("year"));
 	
 	params[U("properties")] = properties;
 	params[U("playerid")] = playerid;
@@ -125,12 +134,17 @@ void get_time_properties_from_player(int playerid)
 	if (!result.is_null())
 	{
 		int percentage = result[U("percentage")].as_integer();
-		json::value time = result[U("time")];
 		json::value totaltime = result[U("totaltime")];
-
-		utility::string_t timestr = format_time(time);
+		json::value time = result[U("time")];
+		
 		utility::string_t totaltimestr = format_time(totaltime);
-		set_time(percentage, timestr, totaltimestr);
+		int totalseconds = justseconds;
+		
+		utility::string_t timestr = format_time(time);
+		int currentsecs = justseconds;
+		int leftseconds = totalseconds - currentsecs;
+		
+		set_time(leftseconds, percentage, timestr, totaltimestr);
 	}
 }
 
@@ -152,7 +166,7 @@ void handle_on_play(json::value in)
 			json::value title = item[U("title")];
 			json::value type = item[U("type")];
 			set_mode(type.as_string());
-			//stop_idle_timer(); //not sure I like this this
+
 			set_icon(play);
 			if ((title.is_null() || 
 				(type.as_string().compare(U("channel")) == 0) || 
@@ -175,7 +189,17 @@ void handle_on_play(json::value in)
 							json::value ritem = result[U("item")];
 							json::value title = ritem[U("title")];
 							json::value type = ritem[U("type")];
-							title = json::value::string(U(""));
+							json::value year = ritem[U("year")];
+							
+							if (year == json::value::string(U("")))
+							{
+								set_year(0);
+							}
+							else
+							{
+								set_year(year.as_integer());
+							}
+
 							if (type.as_string().compare(U("movie")) == 0)
 							{
 								if (title == json::value::string(U("")))
@@ -263,11 +287,6 @@ void handle_on_play(json::value in)
 	};
 }
 
-void handle_on_pause()
-{
-	set_icon(pause);
-}
-
 void handle_on_stop()
 {
 	show_stop();
@@ -277,12 +296,16 @@ void handle_speed_change(json::value incoming)
 {
 	try
 	{
+		json::value method = incoming[U("method")];
 		json::value params = incoming[U("params")];
 		json::value data = params[U("data")];
 		json::value player = data[U("player")];
 		int speed = player[U("speed")].as_integer();
-
-		set_speed(speed);
+		if (!((speed == 1) && (method.as_string().compare(U("Player.OnSpeedChanged")) == 0)))
+		{
+			set_speed(speed);
+			//log("speed_change:");
+		}
 	}
 
 	catch (...)
@@ -295,7 +318,7 @@ void handle_speed_change(json::value incoming)
 utility::string_t format_time(json::value time_str)
 {
 	utility::string_t result;
-
+	justseconds = 0;
 	json::value val = time_str[U("hours")];
 #if 0 //do not make hour 2 digits.
 	if (val.as_integer() < 10)
@@ -305,8 +328,9 @@ utility::string_t format_time(json::value time_str)
 #endif // 0 //do not make hour 2 digits.
 	result += std::to_wstring(val.as_integer());
 	result += utility::string_t(U(":"));
-
+	justseconds += (val.as_integer() * 3600);
 	val = time_str[U("minutes")];
+	justseconds += (val.as_integer() * 60);
 	if (val.as_integer() < 10)
 	{
 		result += utility::string_t(U("0"));
@@ -315,6 +339,7 @@ utility::string_t format_time(json::value time_str)
 	result += utility::string_t(U(":"));
 
 	val = time_str[U("seconds")];
+	justseconds += (val.as_integer());
 	if (val.as_integer() < 10)
 	{
 		result += utility::string_t(U("0"));
@@ -323,6 +348,7 @@ utility::string_t format_time(json::value time_str)
 
 	return result;
 }
+
 
 void handle_volume_change(json::value incoming)
 {
@@ -581,5 +607,3 @@ std::string get_custom_label(char *method, char *item)
 		return string("Error Caught");
 	}
 }
-
-
