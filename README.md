@@ -22,3 +22,5 @@ by Ardunio Nano Backpack running matrix orbital emulation code<br>
 
 Smartie4kodi uses the depreciated C++ REST SDK ([https://github.com/Microsoft/cpprestsdk/](https://github.com/Microsoft/cpprestsdk)).
 
+You will need the MS C++ Resistrubutable installed https://aka.ms/vs/17/release/vc_redist.x86.exe
+
