@@ -105,9 +105,10 @@ void set_title(string_t newtitle)
 		//remove leading whitespace/cr/lf
 		int pos = title.find_first_not_of("\n\r\t ");
 		title = title.substr(pos);
+		//if title = 
 		fixedtitle = title;
 	}
-	::log("title=%s", title.c_str());
+	//::log("title=%s", title.c_str());
 
 	mtx.unlock();
 }
@@ -255,7 +256,7 @@ string get_mode()
 void set_playerid(int id)
 {
 	mtx.lock();
-	player_id = id;
+	player_id = abs(id); //as we sometimes get -1 make it 1!
 	mtx.unlock();
 }
 
@@ -403,8 +404,9 @@ string get_endtime()
 	}
 	if (hours > 11)
 	{
+		hours -= 12;
 		mins_str += " PM";
-		}
+	}
 	else
 	{
 		mins_str += " AM";
@@ -447,13 +449,13 @@ void set_speed(int speedval)
 		}
 		else
 		{
-			shorttime_str = string_t(utility::conversions::to_string_t(get_config_str(sRESUME)));;
+			shorttime_str = string_t(utility::conversions::to_string_t(get_config_str(sRESUME)));
 		}
 	}
 	else if (speedval == 0)
 	{
 		icon = pause;
-		shorttime_str = string_t(utility::conversions::to_string_t(get_config_str(sPAUSE)));;
+		shorttime_str = string_t(utility::conversions::to_string_t(get_config_str(sPAUSE)));
 	}
 	else
 	{
@@ -540,7 +542,7 @@ void set_tv_info(string_t channel, int channel_number, string_t show)
 	set_title(show);
 	mtx.lock();
 	extra_info = 1;
-	tv_info = string_t(utility::conversions::to_string_t(get_config_str(sCHANNEL))) + std::to_wstring(channel_number) + string_t(U(" ")) + channel;
+	tv_info = string_t(utility::conversions::to_string_t(get_config_str(sCHANNEL))) + string_t(U(" ")) + std::to_wstring(channel_number) + string_t(U(" - ")) + channel;
 	mtx.unlock();
 }
 
@@ -594,12 +596,22 @@ string get_song_info()
 	return string("$Center(") + convert + string(")");
 }
 
-string music_info()
+string get_album()
 {
 	//return different information based on extra_info count
 	string convert;
 	mtx.lock();
-	convert = string(artist_info.begin(), artist_info.end()) + " - " + string(album_info.begin(), album_info.end());
+	convert = string(album_info.begin(), album_info.end());
+	mtx.unlock();
+	return convert;
+}
+
+string get_artist()
+{
+	//return different information based on extra_info count
+	string convert;
+	mtx.lock();
+	convert = string(artist_info.begin(), artist_info.end());
 	mtx.unlock();
 	return convert;
 }
@@ -625,6 +637,7 @@ void CALLBACK reset_fired(PVOID lpParameter, BOOLEAN TimerOrWaitFired)
 		reset_timer = NULL;
 		icon = none;
 		title = "";
+		clear_shorttime();
 		mode = U("");
 	}
 	if (mode.compare(U("volume")) == 0)
@@ -654,13 +667,16 @@ void show_stop()
 	secondsleft = 0;
 	stop_time_timer();
 	set_icon(stop);
-	try
-	{
-		set_title(string_t(utility::conversions::to_string_t(get_config_str(sSTOP))));
-	}
-	catch (...) {}
-
+	shorttime_str = string_t(utility::conversions::to_string_t(get_config_str(sSTOP)));
+	title = string(get_config_str(sSTOP));
+	//set_title(string_t(utility::conversions::to_string_t(get_config_str(sSTOP))));
+	
 	CreateTimerQueueTimer(&reset_timer, NULL, reset_fired, NULL, get_config(cRESET_DELAY), 0, 0);
+}
+
+void clear_shorttime()
+{
+	shorttime_str = string_t(utility::conversions::to_string_t(""));
 }
 
 void CALLBACK update_time(PVOID lpParameter, BOOLEAN TimerOrWaitFired)

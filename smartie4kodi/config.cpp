@@ -48,7 +48,7 @@ config_t configs[] = {
 	{ "lcd_width",	MINT, 20,	"" },
 	{ "use_bars",	MINT, 1,	"" },
 	{ "bar_mode", MINT, 0, 0 },
-	{ "reset_delay",MINT, 500,	"" },
+	{ "reset_delay",MINT, 1000,	"" },
 	{ "kodiexe",	MSTR, 0,	"Kodi.exe"},	
 	{ "connect_delay", MINT, 1, "" },
 	{ "time_format", MSTR, 0, "mm/dd/yy hh:nn" },

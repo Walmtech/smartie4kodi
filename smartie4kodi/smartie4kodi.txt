@@ -1,4 +1,4 @@
-Smartie4kodi v1.0.1
+Smartie4kodi v1.0.2
 ===================
 
 smartie4kodi is a DLL plugin for LCD Smartie (http://lcdsmartie.sourceforge.net/) which listens for notification from Kodi and displays information on a 2 line LCD character display. While the default line width is 20 character there is no reason it can’t be configured for a short or longer width.
@@ -66,11 +66,13 @@ Function 14: Simple Title
 	Episode: Episode Title (year) for Episodes and Showtitle for TV
 
 Function 15: Simple more info
-	Displays  Album Artist - Album (Year) for Songs and Show Title (Year) for Episodes "notapp_str" for anything else 
+	Displays  Album (Year) for Songs and Show Title (Year) for Episodes "notapp_str" for anything else 
 
-Function 16: End Time
+Function 16: Artist
+	Shows Artist name for Music or "notapp_str" for anything else  
+
+Function 17: End Time
 	Shows Finish time for Current Media in form "ends_str" --:-- AM/PM if nothing playing just dashes
-
 
 Configuring LCD Smartie
 -----------------------

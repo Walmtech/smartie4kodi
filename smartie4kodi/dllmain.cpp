@@ -47,6 +47,7 @@ char line9[255];
 char line10[255];
 char line11[255];
 char line12[255];
+char line13[255];
 extern bool connected;
 extern bool connecting;
 HANDLE connect_timer;
@@ -124,7 +125,7 @@ __declspec(dllexport)  char * __stdcall  function1(char *param1, char *param2)
 		(get_mode().compare("song") == 0) ||
 		(get_mode().compare("picture") == 0))
 	{
-		display += get_title() + get_year();
+		display += get_title();
 	}
 	else if (get_mode().compare("channel") == 0)
 	{
@@ -544,8 +545,8 @@ __declspec(dllexport)  char* __stdcall  function14(char* param1, char* param2)
 
 /*********************************************************
 * Function 15
-* Displays  Album Artist - Album (Year) for Songs and
-* Show Title for Episodes "notapp_str" for anything else
+* Displays  Album (Year) for Songs and
+* Show Title for Episodes and TV "notapp_str" for anything else
 **********************************************************/
 __declspec(dllexport)  char* __stdcall  function15(char* param1, char* param2)
 {
@@ -561,7 +562,7 @@ __declspec(dllexport)  char* __stdcall  function15(char* param1, char* param2)
 	}
 	else if (get_mode().compare("song") == 0)
 	{
-		display += overflow((music_info() + get_year()), get_config(cLCD_WIDTH));
+		display += overflow((get_album() + get_year()), get_config(cLCD_WIDTH));
 	}
 	else if (get_mode().compare("channel") == 0)
 	{
@@ -579,19 +580,44 @@ __declspec(dllexport)  char* __stdcall  function15(char* param1, char* param2)
 
 /*********************************************************
 * Function 16
-* Displays the End Time of current media and 0 if nothing playing
+* Displays Artist for Songs and "notapp_str" for anything else
 **********************************************************/
 __declspec(dllexport)  char* __stdcall  function16(char* param1, char* param2)
 {
 	string display;
-
-	display = get_endtime();
+	if (!connected && !connecting)// && is_kodi_running())
+	{
+		connecting = true;
+		CreateTimerQueueTimer(&connect_timer, NULL, try_connect, NULL, get_config(cCONNECT_DELAY) * 1000, 0, 0);
+	}
+	if (get_mode().compare("song") == 0)
+	{
+		display += overflow((get_artist()), get_config(cLCD_WIDTH));
+	}
+	else
+	{
+		display += center(string(get_config_str(sNOTAPP)), get_config(cLCD_WIDTH));
+	}
 
 	strcpy_s(line12, display.c_str());
 
 	return line12;
 }
 
+/*********************************************************
+* Function 17
+* Displays the End Time of current media and 0 if nothing playing
+**********************************************************/
+__declspec(dllexport)  char* __stdcall  function17(char* param1, char* param2)
+{
+	string display;
+
+	display = get_endtime();
+
+	strcpy_s(line13, display.c_str());
+
+	return line13;
+}
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,

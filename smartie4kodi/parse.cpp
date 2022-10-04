@@ -158,6 +158,7 @@ void handle_on_play(json::value in)
 		}
 		else
 		{
+			clear_shorttime();
 			stop_time_timer();
 			json::value method = in[U("method")];
 			json::value params = in[U("params")];
@@ -171,7 +172,7 @@ void handle_on_play(json::value in)
 			if ((title.is_null() || 
 				(type.as_string().compare(U("channel")) == 0) || 
 				(type.as_string().compare(U("song")) == 0)) &&
-				(type.as_string().compare(U("picture")) != 0))
+				(type.as_string().compare(U("picture")) != 0))   //If title is null OR type is channel OR song and OR is NOT picture			
 			{
 				json::value player = data[U("player")];
 				json::value id = player[U("playerid")];
@@ -192,6 +193,10 @@ void handle_on_play(json::value in)
 							json::value year = ritem[U("year")];
 							
 							if (year == json::value::string(U("")))
+							{
+								set_year(0);
+							}
+							else if (year == json::value::string(U("1601")))
 							{
 								set_year(0);
 							}
@@ -262,7 +267,7 @@ void handle_on_play(json::value in)
 				{
 					try
 					{
-						//handle title (dvd or unclassified video file
+						//handle title (dvd or unclassified video file)
 						log("title %ls", title.as_string());
 						json::value player = data[U("player")];
 						json::value id = player[U("playerid")];

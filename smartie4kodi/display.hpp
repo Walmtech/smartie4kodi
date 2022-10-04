@@ -41,11 +41,12 @@ void set_tv_info(string_t channel, int channel_number, string_t show);
 string get_tv_info();
 void set_song_info(string_t artist, string_t album, int track);
 string get_song_info();
-string music_info();
+string get_album();
+string get_artist();
 string get_track();
 void set_volume(bool muted, int vol);
 int get_volume();
-
+void clear_shorttime();
 void show_stop();
 void stop_time_timer();
 void start_time_timer(int start_interval_secs);
