@@ -6,7 +6,7 @@ Moved source from Nuget to vcpkg and retargeted to Visual Studio 2022.
 Removed the Test section I wasn't using. 
 Renamed to follow Kodi Trademark rules.
 
-Currently V1.01 added extra dll calls for features I wanted.
+Currently V1.02 added extra dll calls for features I wanted.
 
 ![](/docs/smartie4kodi1.png)
 
